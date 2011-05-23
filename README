@@ -1,0 +1,16 @@
+Cakeupload plugin
+-----------------
+
+A few days ago we were using the swfupload object to upload files inside our cake project.
+After a small configuration change in the project, the uploader component just blew away and started throwing a IOException (no trace, no clues) error.
+Probably it's our fault, but we were totally dissapointed with that...
+
+This plugin is the natural reaction to that feeling.
+
+INSTALLATION
+------------
+
+USAGE
+-----
+
+
