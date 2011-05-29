@@ -12,7 +12,7 @@ class CakeuploadFilesController extends CakeuploadAppController {
 		$sizeLimit = 10 * 1024 * 1024;
 
 		$uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
-		$result = $uploader->handleUpload('uploads/');
+		$result = $uploader->handleUpload(ROOT . DS . APP_DIR . DS . 'uploads' . DS);
 		// to pass data through iframe you will need to encode all html tags
 		echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
 
@@ -165,7 +165,7 @@ class qqFileUploader {
 
 		if ($postSize < $this->sizeLimit || $uploadSize < $this->sizeLimit){
 			$size = max(1, $this->sizeLimit / 1024 / 1024) . 'M';
-			die("{'error':'increase post_max_size and upload_max_filesize to $size'}");
+			die("{'error':'increase post_max_size and upload_max_filesize to $size' in your php.ini file}");
 		}
 	}
 
@@ -185,7 +185,7 @@ class qqFileUploader {
 	 */
 	function handleUpload($uploadDirectory, $replaceOldFile = FALSE){
 		if (!is_writable($uploadDirectory)){
-			return array('error' => "Server error. Upload directory isn't writable.");
+			return array('error' => "Server error. Upload directory isn't writable. $uploadDirectory");
 		}
 
 		if (!$this->file){
