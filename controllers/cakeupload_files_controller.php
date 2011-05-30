@@ -141,6 +141,7 @@ class qqFileUploader {
 	private $allowedExtensions = array();
 	private $sizeLimit = 10485760;
 	private $file;
+	private $newFilename;
 
 	function __construct(array $allowedExtensions = array(), $sizeLimit = 10485760){
 		$allowedExtensions = array_map("strtolower", $allowedExtensions);
@@ -204,8 +205,10 @@ class qqFileUploader {
 
 		$pathinfo = pathinfo($this->file->getName());
 		$filename = $pathinfo['filename'];
-		//$filename = md5(uniqid());
+		$filename .= '-'.md5(uniqid());
 		$ext = $pathinfo['extension'];
+		$this->newFilename = $filename . '.' . $ext;
+		
 
 		if($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions)){
 			$these = implode(', ', $this->allowedExtensions);
@@ -226,6 +229,39 @@ class qqFileUploader {
                 'The upload was cancelled, or server error encountered');
 		}
 
+	}
+	
+	/**
+	 * 
+	 * Returns uploaded file size in bytes if the file is uploaded, -1 if not.
+	 */
+	function getUploadedFileSize(){
+		if ($this->file){
+			return $this->file->getSize();
+		}
+		else return -1;
+	}
+	
+	/**
+	 * 
+	 * Returns the original file name, before it is uploaded
+	 */
+	function getOriginalFileName(){
+		if ($this->file){
+			return $this->file->getName();
+		}
+		else return false;
+	}
+	
+	/**
+	 * Returns the new name assigned to the file
+	 */
+	function getUploadedFileName(){
+		if ($this->file){
+			return $this->newFilename;
+		}
+		else return false;
+			
 	}
 }
 ?>
