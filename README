@@ -10,12 +10,39 @@ This plugin is the natural reaction to that feeling.
 INSTALLATION
 ------------
 
+Download and unzip the plugin unde /app/plugins/cakeupload folder or go to /app/plugins folder and type
+
+  git clone git://github.com/steinkel/cakeupload.git
+
+Run SQL file /app/plugins/cakeupload/config/sql/database.sql into your database
+This script creates a 'cakeupload_files' table, used to store all the upload files.
+
 USAGE
 -----
+
+In your controller, use the component
+
+  var $helpers = array('Cakeupload.Upload');
+
+In your view put the upload button
+
+  <?php echo $upload->button('upload file');?>
+  
+
+That's it !
 
 
 TODO
 ----
+check the table is populated correctly (now it's empty)
+disallow certain filetypes by default
+upload folder and other parameters by config
+mime types check
+
+THANKS
+------
+This project is based on https://github.com/valums/file-uploader 
+
 
 
 
