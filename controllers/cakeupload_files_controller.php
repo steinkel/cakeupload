@@ -6,26 +6,33 @@ class CakeuploadFilesController extends CakeuploadAppController {
 	 * Uploads the file to the server
 	 */
 	function upload(){
+		$desiredGroup = null;
+
+		if (isset($this->params['url']['group'])){
+			$desiredGroup = $this->params['url']['group'];
+		}
+
 		// list of valid extensions, ex. array("jpeg", "xml", "bmp")
 		$allowedExtensions = array();
 		// max file size in bytes
 		$sizeLimit = 10 * 1024 * 1024;
 
 		$uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
-		$result = $uploader->handleUpload(ROOT . DS . APP_DIR . DS . 'uploads' . DS);
-		
+		$result = $uploader->handleUpload(ROOT . DS . APP_DIR . DS . 'uploads' . DS, false, $desiredGroup);
+
 		if (isset($result['success']) && $result['success']){
 			// save the new file to table
 			$originalFilename = $uploader->getOriginalFileName();
 			$uploadedFilename = $uploader->getUploadedFileName();
 			$fspath = $uploader->getFspath();
-			$newFile = array('CakeuploadFile' => array('originalFilename' => $originalFilename, 'uploadedFilename' => $uploadedFilename, 'fspath' => $fspath));
+			$group = $uploader->getGroup();
+			$newFile = array('CakeuploadFile' => array('group' => $group, 'originalFilename' => $originalFilename, 'uploadedFilename' => $uploadedFilename, 'fspath' => $fspath));
 			$this->CakeuploadFile->create();
 			if (!$this->CakeuploadFile->save($newFile)){
 				$this->log('Unable to save record in database, the file was uploaded but no model was updated ' . $fspath);
 			}
 		}
-		
+
 		// to pass data through iframe you will need to encode all html tags
 		echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
 
@@ -46,18 +53,18 @@ class CakeuploadFilesController extends CakeuploadAppController {
 	}
 
 	/*
-	function add() {
+	 function add() {
 		if (!empty($this->data)) {
-			$this->CakeuploadFile->create();
-			if ($this->CakeuploadFile->save($this->data)) {
-				$this->Session->setFlash(__('The cakeupload file has been saved', true));
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(__('The cakeupload file could not be saved. Please, try again.', true));
-			}
+		$this->CakeuploadFile->create();
+		if ($this->CakeuploadFile->save($this->data)) {
+		$this->Session->setFlash(__('The cakeupload file has been saved', true));
+		$this->redirect(array('action' => 'index'));
+		} else {
+		$this->Session->setFlash(__('The cakeupload file could not be saved. Please, try again.', true));
 		}
-	}
-	*/
+		}
+		}
+		*/
 
 	function edit($id = null) {
 		if (!$id && empty($this->data)) {
@@ -199,8 +206,21 @@ class qqFileUploader {
 
 	/**
 	 * Returns array('success'=>true) or array('error'=>'error message')
+	 * The $desiredGroup tags the upload with a group tag and stores the file under a group folder inside the base uploads folder
 	 */
-	function handleUpload($uploadDirectory, $replaceOldFile = FALSE){
+	function handleUpload($uploadDirectory, $replaceOldFile = FALSE, $desiredGroup){
+
+		if ($desiredGroup != null){
+			$uploadDirectory .= $desiredGroup . DS;
+		}
+
+		if (!file_exists($uploadDirectory)){
+			// try to create the folder
+			if (!mkdir($uploadDirectory, 0750, true)){
+				return array('error' => "Could not create folder $uploadDirectory");
+			}
+		}
+
 		if (!is_writable($uploadDirectory)){
 			return array('error' => "Server error. Upload directory isn't writable. $uploadDirectory");
 		}
@@ -225,6 +245,7 @@ class qqFileUploader {
 		$ext = $pathinfo['extension'];
 		$this->newFilename = $filename . '.' . $ext;
 		$this->fspath = $uploadDirectory . $filename . '.' . $ext;
+		$this->group = $desiredGroup;
 
 		if($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions)){
 			$these = implode(', ', $this->allowedExtensions);
@@ -246,9 +267,9 @@ class qqFileUploader {
 		}
 
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Returns uploaded file size in bytes if the file is uploaded, -1 if not.
 	 */
 	function getUploadedFileSize(){
@@ -257,9 +278,9 @@ class qqFileUploader {
 		}
 		else return -1;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Returns the original file name, before it is uploaded
 	 */
 	function getOriginalFileName(){
@@ -268,7 +289,7 @@ class qqFileUploader {
 		}
 		else return false;
 	}
-	
+
 	/**
 	 * Returns the new name assigned to the file
 	 */
@@ -279,10 +300,17 @@ class qqFileUploader {
 		else return false;
 			
 	}
-	
+
 	function getFspath(){
 		if ($this->file){
 			return $this->fspath;
+		}
+		else return false;
+	}
+
+	function getGroup(){
+		if ($this->file){
+			return $this->group;
 		}
 		else return false;
 	}

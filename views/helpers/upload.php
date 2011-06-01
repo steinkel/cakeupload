@@ -6,7 +6,7 @@ class UploadHelper extends AppHelper {
 	/**
 	 * Shows upload button, including necesary scripts
 	 */
-	function button($label, $group = 'root', $folder = 'files') {
+	function button($label, $group = null, $folder = 'files') {
 		echo $this->Html->css('/cakeupload/css/fileuploader.css', null, array('inline' => false));
 		echo $this->Html->script('/cakeupload/js/fileuploader.js', array('inline' => false, 'once' => true));
 		echo "<div id='cakeupload-uploader'>";
@@ -22,6 +22,7 @@ class UploadHelper extends AppHelper {
             var uploader = new qq.FileUploader({
                 element: document.getElementById('cakeupload-uploader'),
                 action: '<?php echo $this->Html->url(array('plugin' => 'cakeupload', 'controller' => 'cakeupload_files', 'action' => 'upload')); ?>',
+                params: { group: '<?php echo $group; ?>'},
                 debug: true
             });           
         }
