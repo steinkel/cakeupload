@@ -34,7 +34,6 @@ That's it !
 
 TODO
 ----
-check the table is populated correctly (now it's empty)
 disallow certain filetypes by default
 upload folder and other parameters by config
 mime types check
