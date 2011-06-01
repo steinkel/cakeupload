@@ -13,6 +13,19 @@ class CakeuploadFilesController extends CakeuploadAppController {
 
 		$uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
 		$result = $uploader->handleUpload(ROOT . DS . APP_DIR . DS . 'uploads' . DS);
+		
+		if (isset($result['success']) && $result['success']){
+			// save the new file to table
+			$originalFilename = $uploader->getOriginalFileName();
+			$uploadedFilename = $uploader->getUploadedFileName();
+			$fspath = $uploader->getFspath();
+			$newFile = array('CakeuploadFile' => array('originalFilename' => $originalFilename, 'uploadedFilename' => $uploadedFilename, 'fspath' => $fspath));
+			$this->CakeuploadFile->create();
+			if (!$this->CakeuploadFile->save($newFile)){
+				$this->log('Unable to save record in database, the file was uploaded but no model was updated ' . $fspath);
+			}
+		}
+		
 		// to pass data through iframe you will need to encode all html tags
 		echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
 
@@ -32,6 +45,7 @@ class CakeuploadFilesController extends CakeuploadAppController {
 		$this->set('cakeuploadFile', $this->CakeuploadFile->read(null, $id));
 	}
 
+	/*
 	function add() {
 		if (!empty($this->data)) {
 			$this->CakeuploadFile->create();
@@ -43,6 +57,7 @@ class CakeuploadFilesController extends CakeuploadAppController {
 			}
 		}
 	}
+	*/
 
 	function edit($id = null) {
 		if (!$id && empty($this->data)) {
@@ -142,6 +157,7 @@ class qqFileUploader {
 	private $sizeLimit = 10485760;
 	private $file;
 	private $newFilename;
+	private $fspath;
 
 	function __construct(array $allowedExtensions = array(), $sizeLimit = 10485760){
 		$allowedExtensions = array_map("strtolower", $allowedExtensions);
@@ -208,7 +224,7 @@ class qqFileUploader {
 		$filename .= '-'.md5(uniqid());
 		$ext = $pathinfo['extension'];
 		$this->newFilename = $filename . '.' . $ext;
-		
+		$this->fspath = $uploadDirectory . $filename . '.' . $ext;
 
 		if($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions)){
 			$these = implode(', ', $this->allowedExtensions);
@@ -222,7 +238,7 @@ class qqFileUploader {
 			}
 		}
 
-		if ($this->file->save($uploadDirectory . $filename . '.' . $ext)){
+		if ($this->file->save($this->fspath)){
 			return array('success'=>true);
 		} else {
 			return array('error'=> 'Could not save uploaded file.' .
@@ -262,6 +278,13 @@ class qqFileUploader {
 		}
 		else return false;
 			
+	}
+	
+	function getFspath(){
+		if ($this->file){
+			return $this->fspath;
+		}
+		else return false;
 	}
 }
 ?>
