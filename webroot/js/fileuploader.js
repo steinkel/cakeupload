@@ -474,7 +474,7 @@ qq.FileUploaderBasic.prototype = {
  * Class that creates upload widget with drag-and-drop and file list
  * @inherits qq.FileUploaderBasic
  */
-qq.FileUploader = function(o){
+qq.FileUploader = function(o, label){
     // call parent constructor
     qq.FileUploaderBasic.apply(this, arguments);
     
@@ -486,7 +486,7 @@ qq.FileUploader = function(o){
                 
         template: '<div class="qq-uploader">' + 
                 '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
-                '<div class="qq-upload-button">Upload a file</div>' +
+                '<div class="qq-upload-button">'+label+'</div>' +
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
 
